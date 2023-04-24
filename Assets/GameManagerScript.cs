@@ -4,97 +4,139 @@ using UnityEngine;
 
 public class GameManagerScript : MonoBehaviour
 {
+    // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ãƒ—ãƒ¬ãƒãƒ–
+    public GameObject playerPrefab;
+    // ãƒœãƒƒã‚¯ã‚¹ã®ãƒ—ãƒ¬ãƒãƒ–
+    public GameObject boxPrefab;
+    // ãƒ¬ãƒ™ãƒ«ãƒ‡ã‚¶ã‚¤ãƒ³ç”¨ã®é…åˆ—
+    int[,] map;
+    // ã‚²ãƒ¼ãƒ ç®¡ç†ç”¨ã®é…åˆ—
+    GameObject[,] field;
 
-    int[] map;
+	// Start is called before the first frame update
+	void Start()
+	{
+		map = new int[,] {
+			{ 0, 0, 2, 0, 0 },
+			{ 0, 0, 1, 2, 0 },
+			{ 0, 2, 0, 0, 0 }
+		};
+        field = new GameObject[
+            map.GetLength(0), 
+            map.GetLength(1)
+        ];
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        map = new int[] { 0, 0, 0, 1, 0, 2, 0, 2, 0 };
-		// Debug.Log("Hello World");
-		PrintArray();
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ãƒ—ãƒ¬ãƒãƒ–ã‚’è¿½åŠ 
+        for (int y = 0; y < map.GetLength(0); y++)
+        {
+            for (int x = 0; x < map.GetLength(1); x++)
+            {
+                switch (map[y, x])
+                {
+                    case 1:
+                        field[y, x] = Instantiate(
+                            playerPrefab,
+                            new Vector3(x - (int)(map.GetLength(1) / 2.0f), -y + (int)(map.GetLength(0) / 2.0f), 0),
+                            Quaternion.identity
+                        );
+                        break;
+                    case 2:
+						field[y, x] = Instantiate(
+							boxPrefab,
+							new Vector3(x - (int)(map.GetLength(1) / 2.0f), -y + (int)(map.GetLength(0) / 2.0f), 0),
+							Quaternion.identity
+						);
+						break;
+                    default:
+                        break;
+                }
+            }
+        }
 	}
 
     // Update is called once per frame
     void Update()
-    {
-        // ‰EˆÚ“®
-        if (Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            int playerIndex = GetPlayerIndex();
+	{
+		// ä¸Šç§»å‹•
+		if (Input.GetKeyDown(KeyCode.UpArrow))
+		{
+			Vector2Int playerIndex = GetPlayerIndex();
 
-            // ˆÚ“®ˆ—‚ğŠÖ”‰»
-            MoveNumber(1, playerIndex, playerIndex + 1);
-        }
-		// ¶ˆÚ“®
+			//// ç§»å‹•å‡¦ç†ã‚’é–¢æ•°åŒ–
+			MoveNumber("Player", playerIndex, new Vector2Int(playerIndex.x, playerIndex.y - 1));
+		}
+		// ä¸‹ç§»å‹•
+		if (Input.GetKeyDown(KeyCode.DownArrow))
+		{
+			Vector2Int playerIndex = GetPlayerIndex();
+
+			//// ç§»å‹•å‡¦ç†ã‚’é–¢æ•°åŒ–
+			MoveNumber("Player", playerIndex, new Vector2Int(playerIndex.x, playerIndex.y + 1));
+		}
+		// å·¦ç§»å‹•
 		if (Input.GetKeyDown(KeyCode.LeftArrow))
 		{
-			int playerIndex = GetPlayerIndex();
+			Vector2Int playerIndex = GetPlayerIndex();
 
-			// ˆÚ“®ˆ—‚ğŠÖ”‰»
-			MoveNumber(1, playerIndex, playerIndex - 1);
+			//// ç§»å‹•å‡¦ç†ã‚’é–¢æ•°åŒ–
+			MoveNumber("Player", playerIndex, new Vector2Int(playerIndex.x - 1, playerIndex.y));
 		}
+		// å³ç§»å‹•
+		if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+			Vector2Int playerIndex = GetPlayerIndex();
 
-
-		PrintArray();
+            //// ç§»å‹•å‡¦ç†ã‚’é–¢æ•°åŒ–
+            MoveNumber("Player", playerIndex, new Vector2Int(playerIndex.x + 1, playerIndex.y));
+		}
 	}
 
     /// <summary>
-    /// ”z—ñ‚Ì•\¦
-    /// </summary>
-    void PrintArray()
-	{
-		string debugText = "";
-
-		for (int i = 0; i < map.Length; i++)
-		{
-			debugText += map[i].ToString() + ",";
-		}
-
-		Debug.Log(debugText);
-	}
-
-    /// <summary>
-    /// ƒvƒŒƒCƒ„[‚ÌƒCƒ“ƒfƒbƒNƒX‚ğæ“¾‚·‚éƒƒ\ƒbƒh
+    /// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’å–å¾—ã™ã‚‹ãƒ¡ã‚½ãƒƒãƒ‰
     /// </summary>
     /// <returns></returns>
-    int GetPlayerIndex()
-    {
-        for(int i = 0; i < map.Length; i++)
-        {
-            if (map[i] == 1)
-            {
-                return i;
+    Vector2Int GetPlayerIndex()
+	{
+		for (int y = 0; y < map.GetLength(0); y++) {
+			for (int x = 0; x < map.GetLength(1); x++) {
+                if (field[y, x] != null && field[y, x].tag == "Player")
+                {
+                    return new Vector2Int(x, y);
+                }
             }
         }
 
-        return -1;
-    }
+        return new Vector2Int(-1, -1);
+	}
 
     /// <summary>
-    /// ˆÚ“®‰Â”\‚©‚Ç‚¤‚©‚ğ•Ô‚·ƒƒ\ƒbƒh
+    /// ç§»å‹•å¯èƒ½ã‹ã©ã†ã‹ã‚’è¿”ã™ãƒ¡ã‚½ãƒƒãƒ‰
     /// </summary>
     /// <param name="number"></param>
     /// <param name="moveFrom"></param>
     /// <param name="moveTo"></param>
     /// <returns></returns>
-    bool MoveNumber(int number, int moveFrom, int moveTo)
+    bool MoveNumber(string tag, Vector2Int moveFrom, Vector2Int moveTo)
     {
-        if(moveTo < 0 || moveTo >= map.Length) { return false; }
-        // ˆÚ“®æ‚É” ‚ª‚¢‚½‚ç
-        if (map[moveTo] == 2)
+        if (moveTo.x < 0 || moveTo.x >= map.GetLength(1)) { return false; }
+		if (moveTo.y < 0 || moveTo.y >= map.GetLength(0)) { return false; }
+
+        // ç§»å‹•å…ˆã«ç®±ãŒã„ãŸã‚‰
+        if (field[moveTo.y, moveTo.x] != null && field[moveTo.y, moveTo.x].tag == "Box")
         {
-            // ‚Ç‚Ì•ûŒü‚ÖˆÚ“®‚·‚é‚©‚ğZo
-            int velocity = moveTo - moveFrom;
-            // ƒvƒŒƒCƒ„[‚ÌˆÚ“®æ‚©‚ç‚³‚ç‚Éæ‚Ö2(” )‚ğˆÚ“®‚³‚¹‚é
-            // ” ‚ÌˆÚ“®ˆ—AMoveNumberƒƒ\ƒbƒh“à‚ÅMoveNumberƒƒ\ƒbƒh‚ğŒÄ‚ÑAˆ—‚ªÄ‹N‚µ‚Ä‚¢‚éAˆÚ“®‰Â•s‰Â‚ğbool‚Å‹L˜^
-            bool success = MoveNumber(2, moveTo, moveTo + velocity);
-            // ‚à‚µ” ‚ªˆÚ“®¸”s‚µ‚½‚çAƒvƒŒƒCƒ„[‚ÌˆÚ“®‚à¸”s
-            if(!success) { return false; }
+			// ã©ã®æ–¹å‘ã¸ç§»å‹•ã™ã‚‹ã‹ã‚’ç®—å‡º
+			Vector2Int velocity = moveTo - moveFrom;
+            // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ç§»å‹•å…ˆã‹ã‚‰ã•ã‚‰ã«å…ˆã¸2(ç®±)ã‚’ç§»å‹•ã•ã›ã‚‹
+            // ç®±ã®ç§»å‹•å‡¦ç†ã€MoveNumberãƒ¡ã‚½ãƒƒãƒ‰å†…ã§MoveNumberãƒ¡ã‚½ãƒƒãƒ‰ã‚’å‘¼ã³ã€å‡¦ç†ãŒå†èµ·ã—ã¦ã„ã‚‹ã€ç§»å‹•å¯ä¸å¯ã‚’boolã§è¨˜éŒ²
+            bool success = MoveNumber("Box", moveTo, moveTo + velocity);
+            // ã‚‚ã—ç®±ãŒç§»å‹•å¤±æ•—ã—ãŸã‚‰ã€ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ç§»å‹•ã‚‚å¤±æ•—
+            if (!success) { return false; }
         }
 
-        map[moveTo] = number;
-        map[moveFrom] = 0;
+        field[moveFrom.y, moveFrom.x].transform.position = new Vector3(moveTo.x - (int)(map.GetLength(1) / 2.0f), -moveTo.y + (int)(map.GetLength(0) / 2.0f), 0);
+        field[moveTo.y, moveTo.x] = field[moveFrom.y, moveFrom.x];
+
+		field[moveFrom.y, moveFrom.x] = null;
         return true;
     }
 
