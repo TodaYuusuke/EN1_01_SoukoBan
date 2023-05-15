@@ -26,6 +26,9 @@ public class GameManagerScript : MonoBehaviour
 	// Start is called before the first frame update
 	void Start()
 	{
+		// 解像度設定
+		Screen.SetResolution(1920, 1080, false);
+
 		map = new int[,] {
 			{ 3, 0, 2, 0, 0 },
 			{ 0, 0, 0, 2, 0 },
@@ -77,7 +80,7 @@ public class GameManagerScript : MonoBehaviour
 	void Update()
 	{
 		// 上移動
-		if (Input.GetKeyDown(KeyCode.UpArrow))
+		if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W))
 		{
 			Vector2Int playerIndex = GetPlayerIndex();
 
@@ -85,7 +88,7 @@ public class GameManagerScript : MonoBehaviour
 			MoveNumber("Player", playerIndex, new Vector2Int(playerIndex.x, playerIndex.y - 1));
 		}
 		// 下移動
-		if (Input.GetKeyDown(KeyCode.DownArrow))
+		if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S))
 		{
 			Vector2Int playerIndex = GetPlayerIndex();
 
@@ -93,7 +96,7 @@ public class GameManagerScript : MonoBehaviour
 			MoveNumber("Player", playerIndex, new Vector2Int(playerIndex.x, playerIndex.y + 1));
 		}
 		// 左移動
-		if (Input.GetKeyDown(KeyCode.LeftArrow))
+		if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
 		{
 			Vector2Int playerIndex = GetPlayerIndex();
 
@@ -101,7 +104,7 @@ public class GameManagerScript : MonoBehaviour
 			MoveNumber("Player", playerIndex, new Vector2Int(playerIndex.x - 1, playerIndex.y));
 		}
 		// 右移動
-		if (Input.GetKeyDown(KeyCode.RightArrow))
+		if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
 		{
 			Vector2Int playerIndex = GetPlayerIndex();
 
