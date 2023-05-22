@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -22,6 +23,15 @@ public class GameManagerScript : MonoBehaviour
 	int[,] map;
 	// ゲーム管理用の配列
 	GameObject[,] field;
+	// ゴール管理用の配列
+
+	struct GameObjectLog
+	{
+		public GameObject gameObject;
+		public Vector3 position;
+	}
+	// アンドゥ用のリスト
+	List<GameObjectLog[,]> fieldLog;
 
 	// Start is called before the first frame update
 	void Start()
@@ -40,6 +50,7 @@ public class GameManagerScript : MonoBehaviour
 			map.GetLength(0), 
 			map.GetLength(1)
 		];
+		fieldLog = new List<GameObjectLog[,]>();
 
 		// プレイヤーとボックスのプレハブを追加
 		for (int y = 0; y < map.GetLength(0); y++)
@@ -84,35 +95,97 @@ public class GameManagerScript : MonoBehaviour
 		{
 			Vector2Int playerIndex = GetPlayerIndex();
 
+			fieldLog.Add(GetGameObjectLog());
+
 			//// 移動処理を関数化
-			MoveNumber("Player", playerIndex, new Vector2Int(playerIndex.x, playerIndex.y - 1));
+			if (!MoveNumber("Player", playerIndex, new Vector2Int(playerIndex.x, playerIndex.y - 1)))
+			{
+				// 移動失敗
+				fieldLog.RemoveAt(fieldLog.Count - 1);
+			}
 		}
 		// 下移動
 		if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S))
 		{
 			Vector2Int playerIndex = GetPlayerIndex();
 
+			fieldLog.Add(GetGameObjectLog());
+
 			//// 移動処理を関数化
-			MoveNumber("Player", playerIndex, new Vector2Int(playerIndex.x, playerIndex.y + 1));
+			if (!MoveNumber("Player", playerIndex, new Vector2Int(playerIndex.x, playerIndex.y + 1)))
+			{
+				// 移動失敗
+				fieldLog.RemoveAt(fieldLog.Count - 1);
+			}
 		}
 		// 左移動
 		if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
 		{
 			Vector2Int playerIndex = GetPlayerIndex();
 
+			fieldLog.Add(GetGameObjectLog());
+
 			//// 移動処理を関数化
-			MoveNumber("Player", playerIndex, new Vector2Int(playerIndex.x - 1, playerIndex.y));
+			if (!MoveNumber("Player", playerIndex, new Vector2Int(playerIndex.x - 1, playerIndex.y)))
+			{
+				// 移動失敗
+				fieldLog.RemoveAt(fieldLog.Count - 1);
+			}
 		}
 		// 右移動
 		if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
 		{
 			Vector2Int playerIndex = GetPlayerIndex();
 
+			fieldLog.Add(GetGameObjectLog());
+
 			//// 移動処理を関数化
-			MoveNumber("Player", playerIndex, new Vector2Int(playerIndex.x + 1, playerIndex.y));
+			if (!MoveNumber("Player", playerIndex, new Vector2Int(playerIndex.x + 1, playerIndex.y)))
+			{
+				// 移動失敗
+				fieldLog.RemoveAt(fieldLog.Count - 1);
+			}
 		}
 
+		// アンドゥ
+		if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Z))
+		{
+			if (fieldLog.Count > 0)
+			{
+				for (int y = 0; y < map.GetLength(0); y++)
+				{
+					for (int x = 0; x < map.GetLength(1); x++)
+					{
+						if (fieldLog[fieldLog.Count - 1][y, x].gameObject != null)
+						{
+							field[y, x] = fieldLog[fieldLog.Count - 1][y, x].gameObject;
+							field[y, x].transform.position = fieldLog[fieldLog.Count - 1][y, x].position;
+						}
+						else
+						{
+							field[y, x] = null;
+						}
+					}
+				}
 
+				fieldLog.RemoveAt(fieldLog.Count - 1);
+			}
+		}
+		// リスタート
+		if (Input.GetKeyDown(KeyCode.R))
+		{
+			for (int y = 0; y < map.GetLength(0); y++)
+			{
+				for (int x = 0; x < map.GetLength(1); x++)
+				{
+					if (field[y, x] != null)
+					{
+						Destroy(field[y, x]);
+					}
+				}
+			}
+			Start();
+		}
 
 		// クリア判定
 		if (isCleard())
@@ -162,8 +235,6 @@ public class GameManagerScript : MonoBehaviour
 		return true;
 	}
 
-
-
 	/// <summary>
 	/// 移動可能かどうかを返すメソッド
 	/// </summary>
@@ -193,6 +264,29 @@ public class GameManagerScript : MonoBehaviour
 
 		field[moveFrom.y, moveFrom.x] = null;
 		return true;
+	}
+
+	/// <summary>
+	/// プレイヤーのインデックスを取得するメソッド
+	/// </summary>
+	/// <returns></returns>
+	GameObjectLog[,] GetGameObjectLog()
+	{
+		GameObjectLog[,] result = new GameObjectLog[map.GetLength(0),map.GetLength(1)];
+		
+		for (int y = 0; y < map.GetLength(0); y++)
+		{
+			for (int x = 0; x < map.GetLength(1); x++)
+			{
+				if (field[y, x] != null)
+				{
+					result[y,x].gameObject = field[y, x];
+					result[y,x].position = field[y, x].transform.position;
+				}
+			}
+		}
+
+		return result;
 	}
 
 }
